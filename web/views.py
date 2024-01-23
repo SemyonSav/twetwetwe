@@ -7,7 +7,22 @@ from web.models import *
 
 @login_required
 def main_view(request):
-    return render(request, "web/main.html")
+    news = News.objects.all()
+
+    return render(request, "web/main.html", {
+        'news': news
+    })
+
+def news_add_view(request):
+    form = NewsForm()
+    if request.method == 'POST':
+        form = NewsForm(data=request.POST, initial={"user": request.user})
+        if form.is_valid():
+            form.save()
+            return redirect("main")
+    return render(request, "web/news_create.html", {
+        "form": form
+    })
 
 
 def registration_view(request):

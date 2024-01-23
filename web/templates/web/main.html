@@ -1,4 +1,19 @@
 {% extends 'web/base.html' %}
 {% block content %}
-    <p>Hello!</p>
+    <h2>Все новости</h2>
+    <br>
+    <ul>
+        {% for n in news %}
+            <li>
+                <b>{{ n.title }}</b> - {{ n.post_date }}
+                <small>
+                    {% if n.tags.all %}
+                        [{{ n.tags_count }}: {% for tag in n.tags.all %} {{ tag.title }} {% endfor %}]
+                    {% endif %}
+
+                    {{ n.user.username }}
+                </small>
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock %}
