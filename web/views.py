@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
+from django.shortcuts import render, redirect, get_object_or_404
 
 from web.forms import *
 from web.models import *
@@ -9,8 +10,13 @@ from web.models import *
 def main_view(request):
     news = News.objects.all()
 
+    total_count = news.count()
+    page_number = request.GET.get("page", 1)
+    paginator = Paginator(news, per_page=3)
+
     return render(request, "web/main.html", {
-        'news': news
+        'news': paginator.get_page(page_number),
+        'total_count': total_count
     })
 
 def news_add_view(request):
@@ -23,6 +29,14 @@ def news_add_view(request):
     return render(request, "web/news_create.html", {
         "form": form
     })
+
+def news_delete_view(request, id):
+    news = get_object_or_404(News, id=id)
+    news.delete()
+    return redirect('main')
+
+
+
 
 
 def registration_view(request):
