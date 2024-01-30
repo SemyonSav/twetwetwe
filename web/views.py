@@ -5,10 +5,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from web.forms import *
 from web.models import *
+from web.services import filter_news
+
 
 @login_required
 def main_view(request):
     news = News.objects.all()
+
+    filter_form = NewsFilterForm(request.GET)
+    filter_form.is_valid()
+    news = filter_news(news, filter_form.cleaned_data)
 
     total_count = news.count()
     page_number = request.GET.get("page", 1)
@@ -16,13 +22,16 @@ def main_view(request):
 
     return render(request, "web/main.html", {
         'news': paginator.get_page(page_number),
-        'total_count': total_count
+        'total_count': total_count,
+        'filter_form': filter_form
     })
 
-def news_add_view(request):
-    form = NewsForm()
+
+def news_edit_view(request, id=None):
+    news = get_object_or_404(News, id=id) if id is not None else None
+    form = NewsForm(instance=news)
     if request.method == 'POST':
-        form = NewsForm(data=request.POST, initial={"user": request.user})
+        form = NewsForm(data=request.POST, instance=news, initial={"user": request.user})
         if form.is_valid():
             form.save()
             return redirect("main")
@@ -30,13 +39,31 @@ def news_add_view(request):
         "form": form
     })
 
+
 def news_delete_view(request, id):
     news = get_object_or_404(News, id=id)
     news.delete()
     return redirect('main')
 
 
+def tags_view(request):
+    tags = NewsTag.objects.all()
+    form = NewsTagForm()
+    if request.method == "POST":
+        form = NewsTagForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('tags')
+    return render(request, 'web/tags.html', {
+        'tags': tags,
+        'form': form
+    })
 
+
+def tags_delete_view(request, id):
+    tags = get_object_or_404(NewsTag, id=id)
+    tags.delete()
+    return redirect('tags')
 
 
 def registration_view(request):
