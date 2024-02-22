@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -12,9 +13,17 @@ from web.services import filter_news
 def main_view(request):
     news = News.objects.all()
 
+    # if request.user.groups.filter(name='moderator').exists():
+    #     print('moder')
+    #
+    # request.user.groups.add(Group.objects.get(name='moderator'))
+
     filter_form = NewsFilterForm(request.GET)
     filter_form.is_valid()
-    news = filter_news(news, filter_form.cleaned_data)
+    tag = NewsTag.objects.first()
+    news = filter_news(tag, news, filter_form.cleaned_data)
+
+
 
     total_count = news.count()
     page_number = request.GET.get("page", 1)
@@ -38,6 +47,10 @@ def news_edit_view(request, id=None):
     return render(request, "web/news_create.html", {
         "form": form
     })
+
+
+def news_view(request, id):
+    news = get_object_or_404(News, id=id)
 
 
 def news_delete_view(request, id):
@@ -64,6 +77,33 @@ def tags_delete_view(request, id):
     tags = get_object_or_404(NewsTag, id=id)
     tags.delete()
     return redirect('tags')
+
+
+def favorite_add_view(request, id):
+    user = request.user
+    news = get_object_or_404(News, id=id)
+
+    favorite, created = Favorite.objects.get_or_create(user=user, news=news)
+
+    if not created:
+        favorite.delete()
+        news.favorite_count -= 1
+        news.save()
+    else:
+        news.favorite_count += 1
+        news.save()
+
+
+    return redirect('favorite')
+
+
+def favorite_view(request):
+    user = request.user
+    news = Favorite.objects.filter(user=user)
+
+    return render(request, "web/favorite.html", {
+        "news": news,
+    })
 
 
 def registration_view(request):

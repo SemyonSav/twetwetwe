@@ -14,7 +14,11 @@
             </div>
         {% else %}
             <a href="{% url 'main' %}">Новости</a>
-            <a href="{% url 'news_add' %}">Написать новость</a>
+            {% for group in request.user.groups.all %}
+                {% if group.name == 'moderator' %}
+                    <a href="{% url 'news_add' %}">Написать новость</a>
+                {% endif %}
+            {% endfor %}
             <a href="#">Избранное</a>
             <a href="{% url 'tags' %}">Теги</a>
             <div style="text-align:right">

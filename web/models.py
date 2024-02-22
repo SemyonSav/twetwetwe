@@ -22,9 +22,11 @@ class News(models.Model):
     post_date = models.DateTimeField(verbose_name='Дата публикации', default=timezone.now)
     text = models.TextField(verbose_name='Текст новости')
     tags = models.ManyToManyField(NewsTag, verbose_name='Теги', blank=True)
+    comments_count = models.IntegerField(default=0, verbose_name="Количество комментариев")
+    favorite_count = models.IntegerField(default=0, verbose_name="Количество добавивших в избранное")
 
     def __str__(self):
-        return f'{self.user.name}: {self.title}'
+        return f'{self.user}: {self.title}'
 
     class Meta:
         verbose_name = 'новость'
@@ -42,3 +44,8 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    news = models.ForeignKey(News, on_delete=models.CASCADE, verbose_name='Новость')

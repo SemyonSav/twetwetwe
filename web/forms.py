@@ -39,7 +39,7 @@ class NewsForm(forms.ModelForm):
 class NewsTagForm(forms.ModelForm):
     class Meta:
         model = NewsTag
-        fields = ('title', )
+        fields = ('title',)
 
 
 class NewsFilterForm(forms.Form):
@@ -47,4 +47,13 @@ class NewsFilterForm(forms.Form):
         label="",
         widget=forms.TextInput(attrs={'placeholder': "Поиск"}),
         required=False
+    )
+
+    sort = forms.ChoiceField(
+            choices=(
+                ('post_date', 'Дате'),
+                ('user', 'Автору'),
+                ('title', 'Названию'),
+            ),
+            label='Сортировать по'
     )
